@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psychological Counseling Chatbot</title>
+    <style>
+        :root {
+            --primary-color: #6a8e7a; /* Soft green */
+            --secondary-color: #a2d2ff; /* Light blue */
+            --background-color: #e0f2f7; /* Very light blue */
+            --chat-bg-color: #ffffff;
+            --user-message-bg: var(--primary-color);
+            --user-message-text: white;
+            --bot-message-bg: #f0f8ff; /* Alice Blue */
+            --bot-message-text: #333;
+            --input-border-color: #cce7ee;
+            --button-hover-color: #5a7a6a;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: var(--background-color);
+            color: #333;
+            overflow: hidden; /* Prevent scrollbars on body */
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 650px; /* Slightly wider */
+            height: 90vh; /* Take up more vertical space */
+            background-color: var(--chat-bg-color);
+            border-radius: 15px;
+            box-shadow: 0 8px 30px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(90vh - 100px); /* Adjust based on input area height */
+            border-bottom: 1px solid var(--input-border-color);
+            scroll-behavior: smooth;
+        }
+        .message {
+            margin-bottom: 18px;
+            display: flex;
+            opacity: 0; /* For fade-in effect */
+            transform: translateY(10px); /* For slide-up effect */
+            animation: messageFadeIn 0.3s ease-out forwards;
+        }
+        .message.user {
+            justify-content: flex-end;
+        }
+        .message.bot {
+            justify-content: flex-start;
+        }
+        .message-content {
+            max-width: 75%; /* Slightly wider messages */
+            padding: 12px 18px;
+            border-radius: 22px; /* More rounded */
+            line-height: 1.5;
+            word-wrap: break-word;
+            font-size: 15px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+        .message.user .message-content {
+            background-color: var(--user-message-bg);
+            color: var(--user-message-text);
+            border-bottom-right-radius: 5px;
+        }
+        .message.bot .message-content {
+            background-color: var(--bot-message-bg);
+            color: var(--bot-message-text);
+            border-bottom-left-radius: 5px;
+        }
+        .input-area {
+            display: flex;
+            padding: 15px 20px;
+            border-top: 1px solid var(--input-border-color);
+            background-color: var(--chat-bg-color);
+        }
+        .input-area input {
+            flex-grow: 1;
+            border: 1px solid var(--input-border-color);
+            border-radius: 25px;
+            padding: 12px 18px;
+            font-size: 16px;
+            margin-right: 12px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-area input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(106, 142, 122, 0.2);
+        }
+        .input-area button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .input-area button:hover {
+            background-color: var(--button-hover-color);
+            transform: translateY(-1px);
+        }
+        .input-area button:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Typing indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 18px;
+            justify-content: flex-start;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: messageFadeIn 0.3s ease-out forwards;
+        }
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin: 0 4px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator .dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator .dot:nth-child(2) { animation-delay: -0.16s; }
+        .typing-indicator .dot:nth-child(3) { animation-delay: 0s; }
+
+        /* Keyframe animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes messageFadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box">
+            <!-- Chat messages will appear here -->
+        </div>
+        <div class="typing-indicator" id="typing-indicator" style="display: none;">
+            <div class="message-content">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        <div class="input-area">
+            <input type="text" id="user-input" placeholder="Type your message...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatBox = document.getElementById('chat-box');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+
+        function addMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', sender);
+            const contentDiv = document.createElement('div');
+            contentDiv.classList.add('message-content');
+            contentDiv.textContent = text;
+            messageDiv.appendChild(contentDiv);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'flex';
+            chatBox.scrollTop = chatBox.scrollHeight; // Scroll to bottom
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (message === '') return;
+
+            addMessage('user', message);
+            userInput.value = '';
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message }),
+                });
+                const data = await response.json();
+                if (data.response) {
+                    addMessage('bot', data.response);
+                } else if (data.error) {
+                    addMessage('bot', `Error: ${data.error}`);
+                }
+            } catch (error) {
+                addMessage('bot', `Network error: ${error}`);
+            } finally {
+                hideTypingIndicator();
+            }
+        }
+
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initial bot message when the page loads
+        window.onload = () => {
+            addMessage('bot', 'Hello! How can I help you today?');
+        };
+    </script>
+</body>
+</html>
