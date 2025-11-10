@@ -1,11 +1,13 @@
 import os
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
+from dotenv import load_dotenv
+
+load_dotenv() # Load environment variables from .env
 
 app = Flask(__name__, template_folder='templates')
 
 # Configure Gemini API
-# Ensure you have your API key in a .env file or set as an environment variable
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
 
 # Placeholder for the system prompt
@@ -83,12 +85,9 @@ def chat():
         return jsonify({'error': 'No message provided'}), 400
 
     try:
-        model = genai.GenerativeModel('gemini-2.0-flash-lite')
+        model = genai.GenerativeModel('gemini-2.0-flash-lite', system_instruction=SYSTEM_PROMPT)
         chat_session = model.start_chat(history=[])
         
-        # Add system prompt to the beginning of the chat history
-        chat_session.send_message(SYSTEM_PROMPT)
-
         response = chat_session.send_message(user_message)
         return jsonify({'response': response.text})
     except Exception as e:
